@@ -1,6 +1,8 @@
-# Create multiple docker containers for a simple web application
+# Module 4 - Edric's Coaching Week 2
 
-## Approach 1: Setup everything using docker commands
+## Create multiple docker containers for a simple web application
+
+### Approach 1: Setup everything using docker commands
 
 1. Setup the database container
 
@@ -70,17 +72,27 @@ docker volume rm db-data
 docker network rm myapp-network
 ```
 
-## Approach 2: Use docker compose
+### Approach 2: Use docker compose
 
-### Step 1: Create a basic docker-compose.yml file
+#### Step 1: Create a basic docker-compose.yml file
 
 1. Create a basic docker-compose.yml file
+
+Here's a table of the basic components used in Docker Compose:
+| Component | Description | Example |
+|-----------|-------------|---------|
+| networks | Defines how containers communicate with each other | `myapp-network` with bridge driver |
+| volumes | Persistent data storage for containers | `db-data` for database persistence |
+| services | Individual containers that make up the application | `demo-db`, `demo-app` |
+| environment | Configuration passed to containers | `DB_USER`, `DB_PASSWORD` |
+| ports | Maps container ports to host ports | `8080:3000` (host:container) |
+| depends_on | Defines service dependencies | `demo-app` depends on `demo-db` |
+| restart | Controls container restart behavior | `unless-stopped` |
+| build | Location of Dockerfile for building images | `.` (current directory) |
 
 2. Add the initial structure:
 
 ```yaml
-version: "3.8"
-
 networks:
   myapp-network:
     driver: bridge
@@ -90,14 +102,20 @@ volumes:
     name: db-data
 ```
 
-### Step 2: Add the database service
+#### Step 2: Add the database service
 
 Now, let's add the PostgreSQL database service:
 
 ⚠️ Warning: Not a best practice to include password in the docker-compose.yml file, just for demonstration purpose.
 
 ```yaml
-version: "3.8"
+networks:
+  myapp-network:
+    driver: bridge
+
+volumes:
+  db-data:
+    name: db-data
 
 services:
   demo-db:
@@ -114,14 +132,6 @@ services:
     networks:
       - myapp-network
     restart: unless-stopped
-
-networks:
-  myapp-network:
-    driver: bridge
-
-volumes:
-  db-data:
-    name: db-data
 ```
 
 At this point, you can start just the database with:
@@ -134,12 +144,18 @@ docker compose up -d demo-db
 docker compose ps
 ```
 
-### Step 3: Add the web application service
+#### Step 3: Add the web application service
 
 Now let's add the web application service to the docker-compose.yml file:
 
 ```yaml
-version: "3.8"
+networks:
+  myapp-network:
+    driver: bridge
+
+volumes:
+  db-data:
+    name: db-data
 
 services:
   demo-db:
@@ -174,7 +190,13 @@ services:
     networks:
       - myapp-network
     restart: unless-stopped
+```
 
+#### Step 4: Add service dependency
+
+Let's add a dependency to ensure the database starts before the application:
+
+```yaml
 networks:
   myapp-network:
     driver: bridge
@@ -182,14 +204,6 @@ networks:
 volumes:
   db-data:
     name: db-data
-```
-
-### Step 4: Add service dependency
-
-Let's add a dependency to ensure the database starts before the application:
-
-```yaml
-version: "3.8"
 
 services:
   demo-db:
@@ -226,17 +240,9 @@ services:
     networks:
       - myapp-network
     restart: unless-stopped
-
-networks:
-  myapp-network:
-    driver: bridge
-
-volumes:
-  db-data:
-    name: db-data
 ```
 
-### Step 5: Running the stack
+#### Step 5: Running the stack
 
 Now that the docker-compose.yml file is complete, you can run the entire stack:
 
@@ -254,7 +260,7 @@ docker compose logs
 docker compose logs demo-app
 ```
 
-### Step 6: Testing the application
+#### Step 6: Testing the application
 
 Test the application the same way as in Approach 1:
 
@@ -269,18 +275,7 @@ curl http://localhost:8080/api/items
 curl -X POST http://localhost:8080/api/items -H "Content-Type: application/json" -d '{"name": "Test Item"}'
 ```
 
-### Step 7: Scaling the application (optional)
-
-One advantage of Docker Compose is that you can easily scale services:
-
-```bash
-# Scale the web application to 3 instances
-docker compose up -d --scale demo-app=3
-```
-
-Note: For this to work, you'd need to adjust the port mapping in your docker-compose.yml to avoid port conflicts.
-
-### Step 8: Clean up
+#### Step 7: Clean up
 
 When you're done, clean up all resources:
 
@@ -299,6 +294,5 @@ docker compose down -v
 
 - **Simplified management**: All configuration is in a single file
 - **Service dependencies**: The `depends_on` parameter ensures the database starts before the app
-- **Easy scaling**: Can scale services with `docker compose up -d --scale demo-app=3`
 - **Environment consistency**: The configuration is easily shared and versioned
 - **One-command deployment**: Starts the entire stack with a single command
