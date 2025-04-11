@@ -1,13 +1,11 @@
-version: "3.8"
 
 networks:
   myapp-network:
-    name: myapp-network
+    driver: bridge
 
 volumes:
   db-data:
     name: db-data
-
 services:
   demo-db:
     image: postgres:13
