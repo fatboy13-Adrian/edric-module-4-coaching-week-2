@@ -1,0 +1,43 @@
+networks:
+  myapp-network:
+    driver: bridge
+
+volumes:
+  db-data:
+    name: db-data
+
+services:
+  demo-db:
+    image: postgres:13
+    container_name: demo-db
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_USER: myuser
+      POSTGRES_DB: mydb
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - myapp-network
+    restart: unless-stopped
+
+  demo-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: demo-app-container
+    ports:
+      - "8080:3000"
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      DB_USER: myuser
+      DB_HOST: demo-db
+      DB_NAME: mydb
+      DB_PASSWORD: mysecretpassword
+    depends_on:
+      - demo-db
+    networks:
+      - myapp-network
+    restart: unless-stopped
