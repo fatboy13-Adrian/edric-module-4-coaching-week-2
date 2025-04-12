@@ -135,7 +135,7 @@ docker run \
   --name demo-app-container \
   -d \
   -p 8080:3000 \
-  -v $(pwd)/logs:/app/logs \
+  -v ./logs:/app/logs \
   -e DB_USER=myuser \
   -e DB_HOST=demo-db \
   -e DB_NAME=mydb \
