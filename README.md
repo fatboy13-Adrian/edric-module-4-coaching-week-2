@@ -133,6 +133,7 @@ docker build -t demo-app .
 ```bash
 docker run \
   --name demo-app-container \
+  --network myapp-network \
   -d \
   -p 8080:3000 \
   -v ./logs:/app/logs \
